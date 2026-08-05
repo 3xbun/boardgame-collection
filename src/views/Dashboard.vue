@@ -1,129 +1,173 @@
 <template>
-  <div>
-    <header>
-      <h1><i class="fa-duotone fa-solid fa-game-board"></i> คอลเลคชั่น</h1>
+  <div class="dashboard-view">
+    <!-- Header Area -->
+    <header class="dashboard-header">
+      <div class="brand">
+        <div class="icon-glow">
+          <i class="fa-duotone fa-game-board-simple header-icon"></i>
+        </div>
+        <div>
+          <h1>คอลเลคชั่น</h1>
+          <p class="subtitle">คลังบอร์ดเกมส่วนตัวของคุณ</p>
+        </div>
+      </div>
+      <router-link to="/add" class="add-btn">
+        <i class="fa-duotone fa-plus"></i>
+        <span>เพิ่มเกม</span>
+      </router-link>
     </header>
 
+    <!-- BoardGame Modal Details Component -->
     <BoardGame :objectid="bgID" v-if="showModal" />
 
-    <div class="stats">
-      <router-link to="/add">เพิ่มเกม</router-link>
-      <p>เกมที่มี: {{ DB.length }}</p>
+    <!-- Stats Dashboard Widget -->
+    <div class="stats-panel">
+      <div class="stat-card">
+        <span class="stat-label">เกมในระบบ</span>
+        <span class="stat-value">{{ DB.length }} <small>เกม</small></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">เล่นรวมทั้งหมด</span>
+        <span class="stat-value text-gold">{{ totalPlays }} <small>ครั้ง</small></span>
+      </div>
     </div>
 
-    <p>เรียงตาม</p>
-    <div class="sort">
-      <p
-        :class="['btn', sortBy === 'alphabetically' ? 'active' : '']"
-        @click="handleSort('alphabetically')"
-      >
-        ตัวอักษร
-        <span v-if="sortBy === 'alphabetically'">
-          <i
-            v-if="sortOrder === 'asc'"
-            class="fa-duotone fa-solid fa-arrow-down-a-z"
-          ></i>
-          <i v-else class="fa-duotone fa-solid fa-arrow-up-a-z"></i>
-        </span>
-      </p>
-      <p
-        :class="['btn', sortBy === 'playtime' ? 'active' : '']"
-        @click="handleSort('playtime')"
-      >
-        เวลาที่ใช้
-        <span v-if="sortBy === 'playtime'">
-          <i
-            v-if="sortOrder === 'asc'"
-            class="fa-duotone fa-solid fa-arrow-down-1-9"
-          ></i>
-          <i v-else class="fa-duotone fa-solid fa-arrow-up-1-9"></i>
-        </span>
-      </p>
-      <p
-        :class="['btn', sortBy === 'players' ? 'active' : '']"
-        @click="handleSort('players')"
-      >
-        ผู้เล่น
-        <span v-if="sortBy === 'players'">
-          <i
-            v-if="sortOrder === 'asc'"
-            class="fa-duotone fa-solid fa-arrow-down-1-9"
-          ></i>
-          <i v-else class="fa-duotone fa-solid fa-arrow-up-1-9"></i>
-        </span>
-      </p>
-      <p
-        :class="['btn', sortBy === 'played' ? 'active' : '']"
-        @click="handleSort('played')"
-      >
-        เล่นไปแล้ว
-        <span v-if="sortBy === 'played'">
-          <i
-            v-if="sortOrder === 'asc'"
-            class="fa-duotone fa-solid fa-arrow-down-1-9"
-          ></i>
-          <i v-else class="fa-duotone fa-solid fa-arrow-up-1-9"></i>
-        </span>
-      </p>
+    <!-- Sorting Selection Chips -->
+    <div class="sort-section">
+      <span class="sort-title">จัดเรียงตาม</span>
+      <div class="sort-chips">
+        <button
+          :class="['sort-chip', sortBy === 'alphabetically' ? 'active' : '']"
+          @click="handleSort('alphabetically')"
+        >
+          <i class="fa-duotone fa-font"></i>
+          <span>ชื่อเกม</span>
+          <span v-if="sortBy === 'alphabetically'" class="arrow-indicator">
+            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-a-z"></i>
+            <i v-else class="fa-duotone fa-arrow-up-a-z"></i>
+          </span>
+        </button>
+
+        <button
+          :class="['sort-chip', sortBy === 'played' ? 'active' : '']"
+          @click="handleSort('played')"
+        >
+          <i class="fa-duotone fa-gamepad"></i>
+          <span>เล่นไปแล้ว</span>
+          <span v-if="sortBy === 'played'" class="arrow-indicator">
+            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-1-9"></i>
+            <i v-else class="fa-duotone fa-arrow-up-1-9"></i>
+          </span>
+        </button>
+
+        <button
+          :class="['sort-chip', sortBy === 'playtime' ? 'active' : '']"
+          @click="handleSort('playtime')"
+        >
+          <i class="fa-duotone fa-clock"></i>
+          <span>เวลาเล่น</span>
+          <span v-if="sortBy === 'playtime'" class="arrow-indicator">
+            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-1-9"></i>
+            <i v-else class="fa-duotone fa-arrow-up-1-9"></i>
+          </span>
+        </button>
+
+        <button
+          :class="['sort-chip', sortBy === 'players' ? 'active' : '']"
+          @click="handleSort('players')"
+        >
+          <i class="fa-duotone fa-users"></i>
+          <span>ผู้เล่น</span>
+          <span v-if="sortBy === 'players'" class="arrow-indicator">
+            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-1-9"></i>
+            <i v-else class="fa-duotone fa-arrow-up-1-9"></i>
+          </span>
+        </button>
+      </div>
     </div>
 
-    <ul class="cards">
-      <li v-for="item in filterDB" class="card">
-        <img
-          :src="item.Image"
-          alt=""
-          @click="
-            showModal = true;
-            bgID = item.BGG_ID;
-          "
-        />
-        <div class="information">
-          <p
-            @click="
-              showModal = true;
-              bgID = item.BGG_ID;
-            "
-          >
-            <strong>{{ item.Name }}</strong>
-          </p>
+    <!-- Boardgames Cards Grid -->
+    <div v-if="DB.length === 0" class="empty-state">
+      <i class="fa-duotone fa-box-open-full empty-icon"></i>
+      <h3>ยังไม่มีบอร์ดเกมในคอลเลคชั่น</h3>
+      <p>เริ่มสะสมเกมโปรดของคุณโดยการคลิกปุ่ม "เพิ่มเกม" ด้านบน</p>
+      <router-link to="/add" class="add-btn inline-add">
+        <i class="fa-duotone fa-plus"></i>
+        <span>เพิ่มเกมแรกของคุณ</span>
+      </router-link>
+    </div>
 
-          <div class="btns">
-            <p
-              class="btn view"
-              @click="
-                showModal = true;
-                bgID = item.BGG_ID;
-              "
-            >
-              <i class="fa-solid fa-eye"></i>
-            </p>
-            <p class="btn play" @click="play(item.Id)">
-              <i class="fa-solid fa-play"></i>
-            </p>
+    <div v-else class="cards-grid">
+      <div v-for="item in filterDB" :key="item.Id" class="game-card">
+        <!-- Game Thumbnail with Cover fit & Hover Zoom -->
+        <div class="card-image-wrapper" @click="openModal(item.BGG_ID)">
+          <img
+            :src="item.Image || '/placeholder-game.png'"
+            class="card-image"
+            alt="Game image"
+            loading="lazy"
+          />
+          <div class="image-overlay">
+            <span class="overlay-text"><i class="fa-duotone fa-magnifying-glass-plus"></i> รายละเอียด</span>
+          </div>
+          <div v-if="Number(item.Played) > 0" class="played-badge">
+            <i class="fa-duotone fa-award"></i> {{ item.Played }}
+          </div>
+        </div>
+
+        <div class="card-content">
+          <h3 class="game-title" @click="openModal(item.BGG_ID)">
+            {{ item.Name }}
+          </h3>
+
+          <!-- Details Rows -->
+          <div class="game-meta">
+            <div class="meta-item">
+              <i class="fa-duotone fa-users text-cyan"></i>
+              <span>{{ item.Player }} คน</span>
+            </div>
+            <div class="meta-item">
+              <i class="fa-duotone fa-clock text-violet"></i>
+              <span>{{ item.Playtime }} นาที</span>
+            </div>
+            <div class="meta-item">
+              <i class="fa-duotone fa-gamepad text-emerald"></i>
+              <span>เล่นแล้ว: <strong class="text-white">{{ item.Played }}</strong> ครั้ง</span>
+            </div>
           </div>
 
-          <p>
-            <i class="fa-duotone fa-solid fa-users"></i> : {{ item.Player }} คน
-          </p>
-          <p>
-            <i class="fa-duotone fa-regular fa-timer"></i> :
-            {{ item.Playtime }} นาที
-          </p>
-          <p>
-            <i class="fa-duotone fa-solid fa-gamepad"></i> :
-            {{ item.Played }} ครั้ง
-          </p>
+          <!-- Interactive Action Button Group -->
+          <div class="card-actions">
+            <button 
+              class="action-btn view-btn" 
+              @click="openModal(item.BGG_ID)"
+              title="ดูข้อมูลเพิ่มเติม"
+            >
+              <i class="fa-duotone fa-eye"></i>
+              <span>รายละเอียด</span>
+            </button>
+            <button 
+              class="action-btn play-btn" 
+              :disabled="playLoadingId === item.Id"
+              @click="play(item.Id, item.Name)"
+              title="บันทึกว่าเล่นเกมนี้"
+            >
+              <i v-if="playLoadingId === item.Id" class="fa-duotone fa-spinner spin-loader"></i>
+              <i v-else class="fa-duotone fa-play"></i>
+              <span>เล่น</span>
+            </button>
+          </div>
         </div>
-      </li>
-    </ul>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, provide, ref } from "vue";
 import axios from "axios";
-
 import BoardGame from "../components/BoardGame.vue";
+import { showToast } from "../toast.js";
 
 const bgID = ref("");
 const showModal = ref(false);
@@ -132,6 +176,16 @@ provide("showModal", showModal);
 const DB = ref([]);
 const sortBy = ref("alphabetically");
 const sortOrder = ref("asc");
+const playLoadingId = ref(null);
+
+const totalPlays = computed(() => {
+  return DB.value.reduce((sum, item) => sum + (Number(item.Played) || 0), 0);
+});
+
+const openModal = (bggId) => {
+  bgID.value = bggId;
+  showModal.value = true;
+};
 
 const handleSort = (criteria) => {
   if (sortBy.value === criteria) {
@@ -179,13 +233,39 @@ const filterDB = computed(() => {
   });
 });
 
-const play = (id) => {
+const play = (id, gameName) => {
+  playLoadingId.value = id;
   axios
     .patch(
       "https://n8n.3xbun.com/webhook/00325598-78e4-4094-ad41-a5faf5778670/bgg-api/play/" +
         id,
     )
-    .then((res) => location.reload());
+    .then((res) => {
+      // Find item in DB and increment Played reactively
+      const item = DB.value.find((x) => x.Id === id);
+      if (item) {
+        item.Played = (Number(item.Played) || 0) + 1;
+        // Update local storage to persist immediately
+        localStorage.setItem("BoardgameDB", JSON.stringify(DB.value));
+      }
+      playLoadingId.value = null;
+      showToast(`บันทึกการเล่น "${gameName}" เรียบร้อยแล้ว!`, 'success');
+      
+      // Silently sync with backend database in the background
+      fetchCollectionSilently();
+    })
+    .catch((err) => {
+      console.error(err);
+      playLoadingId.value = null;
+      showToast("เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
+    });
+};
+
+const fetchCollectionSilently = () => {
+  axios.get("https://n8n.3xbun.com/webhook/bgg-api/collection").then((res) => {
+    DB.value = res.data;
+    localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
+  });
 };
 
 onMounted(() => {
@@ -201,138 +281,424 @@ onMounted(() => {
 </script>
 
 <style scoped>
-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-
-.imgs {
+.dashboard-view {
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  gap: 1.75rem;
+  text-align: left;
 }
 
-img {
-  cursor: pointer;
-  height: 6em;
-  width: auto;
-  border-radius: 0.5em;
-}
-
-.stats {
+/* Header design */
+.dashboard-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 1rem;
 }
 
-.stats p {
-  text-align: right;
-}
-
-.stats a {
-  color: lightgray;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.cards {
+.brand {
   display: flex;
-  gap: 1em;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.card {
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 1em 1em;
-  box-shadow:
-    0 3px 6px rgba(0, 0, 0, 0.16),
-    0 3px 6px rgba(0, 0, 0, 0.23);
-  border-radius: 1em;
-}
-
-li {
-  text-align: center;
-  list-style: none;
   align-items: center;
-  width: 45%;
-  gap: 1em;
-  justify-content: center;
+  gap: 1rem;
 }
 
-.sort {
-  width: 100%;
+.icon-glow {
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md);
   display: flex;
-  gap: 0.5em;
-  padding: 0.5em 1em 1em;
-  flex-wrap: wrap;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
 }
 
-.sort .btn {
-  cursor: pointer;
-  background-color: #3f3a60;
-  padding: 0.5em 1em;
-  border-radius: 0.5em;
+.header-icon {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.add-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   color: white;
-  min-width: 7.5em;
-  text-align: center;
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.3em;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px var(--primary-glow);
+  transition: all var(--transition-fast);
 }
 
-.sort .btn.active {
-  background-color: #6babfa;
-  font-weight: bold;
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
+  color: white;
 }
 
-.reserved {
-  width: 7em;
-  position: absolute;
-  right: -2em;
-  top: 1em;
-  transform: rotate(45deg);
-  padding: 0 0.5em;
-  background-color: #6babfa;
-  color: #fff;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+.add-btn:active {
+  transform: translateY(0);
 }
 
-.information {
+/* Stats Widgets */
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.stat-value small {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.text-gold {
+  color: var(--warning);
+}
+
+/* Sorting section */
+.sort-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sort-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sort-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sort-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  padding: 0.45rem 0.85rem;
+  border-radius: 2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+}
+
+.sort-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.sort-chip.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 10px var(--primary-glow);
+  font-weight: 600;
+}
+
+.arrow-indicator {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-lg);
 }
 
-.btns {
-  display: flex;
-  align-content: center;
-  margin: 0.5em;
-  border-radius: 0.5em;
+.empty-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.empty-state p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 320px;
+}
+
+.inline-add {
+  margin-top: 0.5rem;
+}
+
+/* Cards Grid Layout */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.game-card {
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-normal);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.btn {
-  width: fit-content;
-  padding: 0.5em 1em;
-  font-weight: bold;
+.game-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 12px 20px -8px var(--primary-glow), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+  background: rgba(30, 41, 59, 0.3);
+}
+
+/* Thumbnail Wrapper with Overlay */
+.card-image-wrapper {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
   cursor: pointer;
+  background: #090d16;
 }
 
-.view {
-  background: #e6e6e6;
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-normal);
 }
 
-.play {
-  background: #6babfa;
-  color: #fff;
+.game-card:hover .card-image {
+  transform: scale(1.06);
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 15, 25, 0.6);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--transition-fast);
+}
+
+.card-image-wrapper:hover .image-overlay {
+  opacity: 1;
+}
+
+.overlay-text {
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.played-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(245, 158, 11, 0.95);
+  color: #0f172a;
+  padding: 0.15rem 0.45rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Card Information Body */
+.card-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex-grow: 1;
+}
+
+.game-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6rem;
+  color: var(--text-primary);
+  transition: color var(--transition-fast);
+}
+
+.game-title:hover {
+  color: var(--primary);
+}
+
+/* Meta list inside Card */
+.game-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta-item i {
+  font-size: 0.85rem;
+  width: 1rem;
+  text-align: center;
+}
+
+.text-cyan {
+  color: var(--secondary);
+}
+
+.text-violet {
+  color: var(--primary);
+}
+
+.text-emerald {
+  color: var(--success);
+}
+
+/* Card Button Group */
+.card-actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.action-btn {
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border: none;
+  transition: all var(--transition-fast);
+}
+
+.view-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.view-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.play-btn {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.play-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.play-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .card-image-wrapper {
+    aspect-ratio: 16 / 9;
+  }
 }
 </style>

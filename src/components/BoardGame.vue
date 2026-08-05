@@ -1,83 +1,106 @@
 <template>
-  <div class="modal" v-if="showModal && ready">
-    <div class="close" @click="close()">
-      <i class="fa-duotone fa-solid fa-xmark-large"></i>
-    </div>
-    <div class="head">
-      <h1>{{ bgData.name }}</h1>
-      <p class="year">({{ bgData.yearpublished.value }})</p>
-    </div>
+  <Teleport to="body">
+    <div class="modal-backdrop" v-if="showModal && ready" @click.self="close()">
+      <div class="modal-container">
+        <!-- Close Button (Top Right) -->
+        <button class="modal-close-btn" @click="close()" title="ปิดหน้าต่าง">
+          <i class="fa-duotone fa-xmark"></i>
+        </button>
 
-    <div class="summary">
-      <div class="image">
-        <img :src="bgData.image" />
+        <!-- Header Area -->
+        <header class="modal-header">
+          <h1 class="modal-title">{{ bgData.name }}</h1>
+          <p class="modal-year" v-if="bgData.yearpublished">
+            ({{ bgData.yearpublished.value }})
+          </p>
+        </header>
+
+        <!-- Main Summary Section -->
+        <div class="modal-summary">
+          <div class="modal-image-wrapper">
+            <img :src="bgData.image" class="modal-image" alt="Game cover" />
+          </div>
+
+          <div class="modal-info-list">
+            <div class="info-pill pill-cyan">
+              <i class="fa-duotone fa-users"></i>
+              <span class="pill-label">ผู้เล่น</span>
+              <span class="pill-text">
+                {{
+                  bgData.minplayers.value === bgData.maxplayers.value
+                    ? bgData.minplayers.value
+                    : `${bgData.minplayers.value} – ${bgData.maxplayers.value}`
+                }}
+                คน
+              </span>
+            </div>
+
+            <div class="info-pill pill-violet">
+              <i class="fa-duotone fa-clock"></i>
+              <span class="pill-label">เวลาเล่น</span>
+              <span class="pill-text">
+                {{
+                  bgData.minplaytime.value === bgData.maxplaytime.value
+                    ? bgData.minplaytime.value
+                    : `${bgData.minplaytime.value} – ${bgData.maxplaytime.value}`
+                }}
+                นาที
+              </span>
+            </div>
+
+            <div class="info-pill pill-amber">
+              <i class="fa-duotone fa-cake-candles"></i>
+              <span class="pill-label">อายุขั้นต่ำ</span>
+              <span class="pill-text">{{ bgData.minage.value }}+ ปี</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- YouTube Watch Tutorial Button -->
+        <a
+          target="_blank"
+          class="youtube-tutorial-btn"
+          :href="
+            'https://www.youtube.com/results?search_query=' +
+            encodeURIComponent(bgData.name + ' วิธีเล่น')
+          "
+          title="ค้นหาวิดีโอวิธีเล่นบน YouTube"
+        >
+          <i class="fa-brands fa-youtube"></i>
+          <span>ดูวิธีสอนเล่นบน YouTube</span>
+        </a>
+
+        <!-- Categories & Mechanics Tags -->
+        <div
+          class="modal-tags-section"
+          v-if="categories && categories.length > 0"
+        >
+          <div class="tags-header">
+            <i class="fa-duotone fa-tags"></i>
+            <span>แท็ก & กลไกของเกม</span>
+          </div>
+          <div class="tags-cloud">
+            <span class="tag-badge" v-for="link in categories" :key="link.id">
+              {{ link.value }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Description Block -->
+        <div class="modal-description-box">
+          <h3>คำอธิบายเกม</h3>
+          <div class="desc-divider"></div>
+          <div class="description-text" v-html="bgData.description"></div>
+        </div>
       </div>
-      <div class="information">
-        <div class="players">
-          <i class="fa-duotone fa-solid fa-users"></i>
-          <span>
-            {{
-              bgData.minplayers.value === bgData.maxplayers.value
-                ? bgData.minplayers.value
-                : `${bgData.minplayers.value} – ${bgData.maxplayers.value}`
-            }}
-            คน
-          </span>
-        </div>
-
-        <div class="playtime">
-          <i class="fa-duotone fa-regular fa-timer"></i>
-          <span>
-            {{
-              bgData.minplaytime.value === bgData.maxplaytime.value
-                ? bgData.minplaytime.value
-                : `${bgData.minplaytime.value} – ${bgData.maxplaytime.value}`
-            }}
-            นาที
-          </span>
-        </div>
-
-        <div class="age">
-          <i class="fa-duotone fa-solid fa-child-reaching"></i>
-          <span> {{ bgData.minage.value }}+ ปี </span>
-        </div>
-      </div>
     </div>
-
-    <a
-      target="_blank"
-      class="youtube"
-      :href="
-        'https://www.youtube.com/results?search_query=' +
-        bgData.name +
-        ' วิธีเล่น'
-      "
-    >
-      <i class="fa-brands fa-youtube"></i>
-      <span>ดูวิธีเล่น {{ bgData.name }}</span>
-    </a>
-
-    <div class="categories">
-      <i class="fa-duotone fa-solid fa-tags"></i>
-
-      <span class="category" v-for="link in categories">
-        <span>{{ link.value }}</span>
-      </span>
-    </div>
-
-    <div class="desc">
-      <h3>คำอธิบาย</h3>
-      <hr />
-      <br />
-      <p v-html="bgData.description"></p>
-    </div>
-    <!-- <div class="delete" @click="delete (bgData.objectid)">นำออกจากคอลเลคชั่น</div> -->
-  </div>
+  </Teleport>
 </template>
 
 <script setup>
 import axios from "axios";
 import { computed, inject, onMounted, ref } from "vue";
+import { showToast } from "../toast.js";
 
 const bgData = ref({});
 const showModal = inject("showModal");
@@ -86,10 +109,12 @@ const ready = ref(false);
 
 const categories = computed(() => {
   const links = bgData.value.link;
+  if (!links) return [];
 
+  // Return links matching BGG category or mechanic
   return links.filter(
     (link) =>
-      link.type == "boardgamecategory" || link.type == "boardgamemechanic"
+      link.type === "boardgamecategory" || link.type === "boardgamemechanic",
   );
 });
 
@@ -107,19 +132,23 @@ const getBG = (id) => {
 
       bgData.value = data;
 
-      if (name.length > 0) {
+      if (name && name.length > 0) {
         bgData.value.name = name.filter((n) => n.type == "primary")[0].value;
 
-        if (name.filter((n) => thaiLang.test(n.value)) == true) {
+        if (name.filter((n) => thaiLang.test(n.value)).length > 0) {
           bgData.value.name = name.filter((n) =>
-            thaiLang.test(n.value)
+            thaiLang.test(n.value),
           )[0].value;
         }
-      } else {
+      } else if (name) {
         bgData.value.name = name.value;
       }
 
       ready.value = true;
+    })
+    .catch((err) => {
+      console.error(err);
+      showToast("เกิดข้อผิดพลาดในการโหลดข้อมูลบอร์ดเกม", "error");
     });
 };
 
@@ -129,139 +158,271 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.close {
-  margin: 0 auto 1em;
+/* Modal backdrop with blur & dark background overlay */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-backdrop);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 999;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  width: 2em;
-  height: 2em;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  padding: 1.5rem 1rem;
+  animation: fadeIn 0.25s ease forwards;
 }
 
-.close i {
-  margin: 0;
-}
-
-.modal {
-  max-width: 450px;
-  width: 90vw;
-  height: 90vh;
-  position: fixed;
-  background-color: white;
-  z-index: 99;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 1em;
-  overflow: scroll;
-  overflow-x: hidden;
-  padding: 1em;
-}
-
-.summary {
-  display: flex;
-  margin: 1em 0;
-}
-
-.year {
-  font-weight: bold;
-  color: lightgray;
-  margin-top: -0.5em;
-}
-
-.image {
-  width: 50%;
-}
-
-img {
+/* Modal Content Container Card */
+.modal-container {
+  background: #151f32;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  overflow-y: auto;
+  padding: 2rem;
+  position: relative;
   width: 100%;
-  border-radius: 1em;
-}
-
-.youtube {
-  background-color: #fe0032;
-  color: #fff;
-  padding: 0.5em;
-  width: fit-content;
-  border-radius: 0.5em;
-  cursor: pointer;
-  text-decoration: none;
-  align-self: center;
-}
-
-.information {
-  width: 50%;
   display: flex;
-  padding-left: 1em;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
 
-i {
-  margin-right: 0.5em;
-  width: 1em;
+/* Floating Close Button top right */
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  color: var(--text-secondary);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
 }
 
-.desc {
+.modal-close-btn i {
+  font-size: 1.1rem;
+}
+
+/* Header typography styling */
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-right: 2rem;
+  text-align: left;
+}
+
+.modal-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.modal-year {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Split Image and Information Row */
+.modal-summary {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.modal-image-wrapper {
+  width: 42%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-info-list {
+  width: 58%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+/* Rounded metadata list items styling */
+.info-pill {
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.info-pill i {
+  font-size: 1rem;
+  width: 1.25rem;
+  text-align: center;
+}
+
+.pill-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.pill-text {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.pill-cyan {
+  background: rgba(6, 182, 212, 0.08);
+  color: var(--secondary);
+  border-color: rgba(6, 182, 212, 0.15);
+}
+
+.pill-violet {
+  background: rgba(99, 102, 241, 0.08);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+.pill-amber {
+  background: rgba(245, 158, 11, 0.08);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.15);
+}
+
+/* High-end custom crimson YouTube pill button */
+.youtube-tutorial-btn {
+  background: linear-gradient(135deg, #e50914 0%, #b80710 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+  transition: all var(--transition-fast);
+}
+
+.youtube-tutorial-btn:hover {
+  transform: translateY(-2.5px);
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.55);
+  color: white;
+}
+
+.youtube-tutorial-btn:active {
+  transform: translateY(0);
+}
+
+.youtube-tutorial-btn i {
+  font-size: 1.25rem;
+}
+
+/* Tags section */
+.modal-tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.tags-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag-badge {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Beautiful scrollable description block */
+.modal-description-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.modal-description-box h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.desc-divider {
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-color) 0%, transparent 100%);
+  width: 100%;
+}
+
+.description-text {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
   text-align: justify;
 }
 
-.categories {
-  display: flex;
-  gap: 0.5em;
-  flex-wrap: wrap;
-  align-items: center;
-  margin: 1.5em 0 1em;
-}
-
-.categories i {
-  margin: 0;
-}
-
-.category {
-  background-color: lightgrey;
-  color: grey;
-  border-radius: 0.5em;
-  padding: 0 0.5em;
-  font-style: italic;
-}
-
-.delete {
-  width: fit-content;
-  margin: auto;
-  background-color: #ee636d;
-  color: #fff;
-  padding: 0.5em 1em;
-  border-radius: 0.5em;
-  cursor: pointer;
-}
-
-.reservation {
-  background-color: #6babfa;
-  margin: 1em auto;
-  padding: 0.5em 1em;
-  border-radius: 0.5em;
-  color: #fff;
-  width: fit-content;
-}
-
-.played-btn {
-  background: #6babfa;
-  width: fit-content;
-  padding: 0.5em 1em;
-  border-radius: 0.5em;
-  font-weight: bold;
-  color: #fff;
-  cursor: pointer;
-  margin: 1em auto;
-}
-
-.played {
-  color: lightgray;
-  font-style: italic;
+/* Responsive adjustment */
+@media (max-width: 480px) {
+  .modal-container {
+    padding: 1.5rem 1.25rem;
+    max-height: 90vh;
+  }
+  .modal-summary {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .modal-image-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+  }
+  .modal-info-list {
+    width: 100%;
+  }
 }
 </style>
