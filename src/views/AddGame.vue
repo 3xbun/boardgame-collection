@@ -12,17 +12,28 @@
     <!-- Search Input Bar -->
     <div class="search-container">
       <div class="search-bar">
-        <i v-if="!isSearching" class="fa-duotone fa-magnifying-glass search-icon"></i>
-        <i v-else class="fa-duotone fa-spinner spin-loader search-icon text-primary"></i>
-        
-        <input 
-          type="text" 
-          v-model="searchText" 
+        <i
+          v-if="!isSearching"
+          class="fa-duotone fa-magnifying-glass search-icon"
+        ></i>
+        <i
+          v-else
+          class="fa-duotone fa-spinner spin-loader search-icon text-primary"
+        ></i>
+
+        <input
+          type="text"
+          v-model="searchText"
           placeholder="พิมพ์ชื่อบอร์ดเกมเพื่อค้นหา..."
-          @input="search" 
+          @input="search"
         />
-        
-        <button v-if="searchText" class="clear-btn" @click="clearSearch" title="ล้างคำค้นหา">
+
+        <button
+          v-if="searchText"
+          class="clear-btn"
+          @click="clearSearch"
+          title="ล้างคำค้นหา"
+        >
           <i class="fa-duotone fa-circle-xmark"></i>
         </button>
       </div>
@@ -42,22 +53,27 @@
             <div class="search-item-content">
               <i class="fa-duotone fa-chess-knight item-icon"></i>
               <span class="game-name">{{ item.name?.value }}</span>
-              <span class="game-year" v-if="item.yearpublished">({{ item.yearpublished.value }})</span>
+              <span class="game-year" v-if="item.yearpublished"
+                >({{ item.yearpublished.value }})</span
+              >
             </div>
             <i class="fa-duotone fa-chevron-right arrow-icon"></i>
           </li>
         </template>
-        
+
         <!-- Single Result Case (Object) -->
-        <template v-else-if="result && typeof result === 'object' && !Array.isArray(result)">
-          <li
-            class="search-item"
-            @click="selectGame(result)"
-          >
+        <template
+          v-else-if="
+            result && typeof result === 'object' && !Array.isArray(result)
+          "
+        >
+          <li class="search-item" @click="selectGame(result)">
             <div class="search-item-content">
               <i class="fa-duotone fa-chess-knight item-icon"></i>
               <span class="game-name">{{ result.name?.value }}</span>
-              <span class="game-year" v-if="result.yearpublished">({{ result.yearpublished.value }})</span>
+              <span class="game-year" v-if="result.yearpublished"
+                >({{ result.yearpublished.value }})</span
+              >
             </div>
             <i class="fa-duotone fa-chevron-right arrow-icon"></i>
           </li>
@@ -76,7 +92,11 @@
       <div class="preview-card">
         <!-- Hero Cover Image -->
         <div class="preview-image-wrapper">
-          <img :src="bgData.image" class="preview-image" alt="Board game cover" />
+          <img
+            :src="bgData.image"
+            class="preview-image"
+            alt="Board game cover"
+          />
           <div v-if="isInCollection" class="owned-tag">
             <i class="fa-duotone fa-circle-check"></i> สะสมแล้ว
           </div>
@@ -104,7 +124,7 @@
                 คน
               </span>
             </div>
-            
+
             <div class="preview-stat-pill bg-violet">
               <i class="fa-duotone fa-clock"></i>
               <span>{{ bgData.playingtime.value }} นาที</span>
@@ -113,9 +133,9 @@
 
           <!-- Add to Collection Controls -->
           <div class="preview-control">
-            <button 
+            <button
               v-if="!isInCollection"
-              class="add-collection-btn" 
+              class="add-collection-btn"
               :disabled="isAdding"
               @click="addToCollection"
             >
@@ -123,11 +143,7 @@
               <i v-else class="fa-duotone fa-circle-plus"></i>
               <span>เพิ่มเข้าคอลเลคชั่น</span>
             </button>
-            <button 
-              v-else
-              class="add-collection-btn owned-disabled" 
-              disabled
-            >
+            <button v-else class="add-collection-btn owned-disabled" disabled>
               <i class="fa-duotone fa-circle-check"></i>
               <span>มีเกมนี้อยู่ในคอลเลคชั่นแล้ว</span>
             </button>
@@ -157,14 +173,14 @@ const search = () => {
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value);
   }
-  
+
   if (!searchText.value.trim()) {
     result.value = "";
     return;
   }
-  
+
   isSearching.value = true;
-  
+
   // Debounce API requests for 400ms
   searchTimeout.value = setTimeout(() => {
     axios
@@ -469,7 +485,6 @@ h1 {
 .preview-image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
   overflow: hidden;
   background: #090d16;
 }

@@ -419,7 +419,7 @@ onMounted(() => {
   }
   .modal-image-wrapper {
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 1 / 1;
   }
   .modal-info-list {
     width: 100%;

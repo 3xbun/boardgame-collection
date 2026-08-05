@@ -28,7 +28,9 @@
       </div>
       <div class="stat-card">
         <span class="stat-label">เล่นรวมทั้งหมด</span>
-        <span class="stat-value text-gold">{{ totalPlays }} <small>ครั้ง</small></span>
+        <span class="stat-value text-gold"
+          >{{ totalPlays }} <small>ครั้ง</small></span
+        >
       </div>
     </div>
 
@@ -43,7 +45,10 @@
           <i class="fa-duotone fa-font"></i>
           <span>ชื่อเกม</span>
           <span v-if="sortBy === 'alphabetically'" class="arrow-indicator">
-            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-a-z"></i>
+            <i
+              v-if="sortOrder === 'asc'"
+              class="fa-duotone fa-arrow-down-a-z"
+            ></i>
             <i v-else class="fa-duotone fa-arrow-up-a-z"></i>
           </span>
         </button>
@@ -55,7 +60,10 @@
           <i class="fa-duotone fa-gamepad"></i>
           <span>เล่นไปแล้ว</span>
           <span v-if="sortBy === 'played'" class="arrow-indicator">
-            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-1-9"></i>
+            <i
+              v-if="sortOrder === 'asc'"
+              class="fa-duotone fa-arrow-down-1-9"
+            ></i>
             <i v-else class="fa-duotone fa-arrow-up-1-9"></i>
           </span>
         </button>
@@ -67,7 +75,10 @@
           <i class="fa-duotone fa-clock"></i>
           <span>เวลาเล่น</span>
           <span v-if="sortBy === 'playtime'" class="arrow-indicator">
-            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-1-9"></i>
+            <i
+              v-if="sortOrder === 'asc'"
+              class="fa-duotone fa-arrow-down-1-9"
+            ></i>
             <i v-else class="fa-duotone fa-arrow-up-1-9"></i>
           </span>
         </button>
@@ -79,7 +90,10 @@
           <i class="fa-duotone fa-users"></i>
           <span>ผู้เล่น</span>
           <span v-if="sortBy === 'players'" class="arrow-indicator">
-            <i v-if="sortOrder === 'asc'" class="fa-duotone fa-arrow-down-1-9"></i>
+            <i
+              v-if="sortOrder === 'asc'"
+              class="fa-duotone fa-arrow-down-1-9"
+            ></i>
             <i v-else class="fa-duotone fa-arrow-up-1-9"></i>
           </span>
         </button>
@@ -108,7 +122,10 @@
             loading="lazy"
           />
           <div class="image-overlay">
-            <span class="overlay-text"><i class="fa-duotone fa-magnifying-glass-plus"></i> รายละเอียด</span>
+            <span class="overlay-text"
+              ><i class="fa-duotone fa-magnifying-glass-plus"></i>
+              รายละเอียด</span
+            >
           </div>
           <div v-if="Number(item.Played) > 0" class="played-badge">
             <i class="fa-duotone fa-award"></i> {{ item.Played }}
@@ -132,27 +149,34 @@
             </div>
             <div class="meta-item">
               <i class="fa-duotone fa-gamepad text-emerald"></i>
-              <span>เล่นแล้ว: <strong class="text-white">{{ item.Played }}</strong> ครั้ง</span>
+              <span
+                >เล่นแล้ว:
+                <strong class="text-white">{{ item.Played }}</strong>
+                ครั้ง</span
+              >
             </div>
           </div>
 
           <!-- Interactive Action Button Group -->
           <div class="card-actions">
-            <button 
-              class="action-btn view-btn" 
+            <button
+              class="action-btn view-btn"
               @click="openModal(item.BGG_ID)"
               title="ดูข้อมูลเพิ่มเติม"
             >
               <i class="fa-duotone fa-eye"></i>
-              <span>รายละเอียด</span>
+              <span>ดู</span>
             </button>
-            <button 
-              class="action-btn play-btn" 
+            <button
+              class="action-btn play-btn"
               :disabled="playLoadingId === item.Id"
               @click="play(item.Id, item.Name)"
               title="บันทึกว่าเล่นเกมนี้"
             >
-              <i v-if="playLoadingId === item.Id" class="fa-duotone fa-spinner spin-loader"></i>
+              <i
+                v-if="playLoadingId === item.Id"
+                class="fa-duotone fa-spinner spin-loader"
+              ></i>
               <i v-else class="fa-duotone fa-play"></i>
               <span>เล่น</span>
             </button>
@@ -249,8 +273,8 @@ const play = (id, gameName) => {
         localStorage.setItem("BoardgameDB", JSON.stringify(DB.value));
       }
       playLoadingId.value = null;
-      showToast(`บันทึกการเล่น "${gameName}" เรียบร้อยแล้ว!`, 'success');
-      
+      showToast(`บันทึกการเล่น "${gameName}" เรียบร้อยแล้ว!`, "success");
+
       // Silently sync with backend database in the background
       fetchCollectionSilently();
     })
@@ -334,7 +358,11 @@ h1 {
 }
 
 .add-btn {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-hover) 100%
+  );
   color: white;
   padding: 0.6rem 1.15rem;
   border-radius: var(--radius-md);
@@ -489,7 +517,7 @@ h1 {
 /* Cards Grid Layout */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
 }
 
@@ -501,20 +529,24 @@ h1 {
   display: flex;
   flex-direction: column;
   transition: all var(--transition-normal);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .game-card:hover {
   transform: translateY(-4px);
   border-color: rgba(99, 102, 241, 0.25);
-  box-shadow: 0 12px 20px -8px var(--primary-glow), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 12px 20px -8px var(--primary-glow),
+    0 4px 6px -2px rgba(0, 0, 0, 0.5);
   background: rgba(30, 41, 59, 0.3);
 }
 
 /* Thumbnail Wrapper with Overlay */
 .card-image-wrapper {
   position: relative;
-  aspect-ratio: 16 / 11;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   cursor: pointer;
   background: #090d16;
@@ -637,7 +669,7 @@ h1 {
 /* Card Button Group */
 .card-actions {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 0.5rem;
   margin-top: 0.25rem;
 }
