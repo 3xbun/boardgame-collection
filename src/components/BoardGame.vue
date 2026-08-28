@@ -58,19 +58,31 @@
           </div>
         </div>
 
-        <!-- YouTube Watch Tutorial Button -->
-        <a
-          target="_blank"
-          class="youtube-tutorial-btn"
-          :href="
-            'https://www.youtube.com/results?search_query=' +
-            encodeURIComponent(bgData.name + ' ' + $t('wayToPlay'))
-          "
-          :title="$t('watchTutorial')"
-        >
-          <i class="fa-brands fa-youtube"></i>
-          <span>{{ $t('watchTutorial') }}</span>
-        </a>
+        <!-- Action Buttons -->
+        <div class="modal-action-buttons">
+          <a
+            target="_blank"
+            class="youtube-tutorial-btn"
+            :href="
+              'https://www.youtube.com/results?search_query=' +
+              encodeURIComponent(bgData.name + ' ' + $t('wayToPlay'))
+            "
+            :title="$t('watchTutorial')"
+          >
+            <i class="fa-brands fa-youtube"></i>
+            <span>{{ $t('watchTutorial') }}</span>
+          </a>
+
+          <a
+            target="_blank"
+            class="bgg-link-btn"
+            :href="'https://boardgamegeek.com/boardgame/' + props.objectid"
+            :title="$t('viewOnBgg')"
+          >
+            <i class="fa-solid fa-globe"></i>
+            <span>{{ $t('viewOnBgg') }}</span>
+          </a>
+        </div>
 
         <!-- Categories & Mechanics Tags -->
         <div
@@ -319,6 +331,12 @@ onMounted(() => {
 }
 
 /* High-end custom crimson YouTube pill button */
+.modal-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 .youtube-tutorial-btn {
   background: linear-gradient(135deg, #e50914 0%, #b80710 100%);
   color: white;
@@ -347,6 +365,38 @@ onMounted(() => {
 
 .youtube-tutorial-btn i {
   font-size: 1.25rem;
+}
+
+/* BGG link button */
+.bgg-link-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all var(--transition-fast);
+}
+
+.bgg-link-btn:hover {
+  transform: translateY(-2.5px);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bgg-link-btn:active {
+  transform: translateY(0);
+}
+
+.bgg-link-btn i {
+  font-size: 1.05rem;
 }
 
 /* Tags section */
