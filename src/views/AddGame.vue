@@ -270,7 +270,7 @@ const addToCollection = () => {
   };
 
   axios
-    .post("https://n8n.3xbun.com/webhook/bgg-api/add", payload)
+    .post("/n8n-api/webhook/bgg-api/add", payload)
     .then((res) => {
       showToast(`เพิ่ม "${bgData.value.name}" เข้าคอลเลคชั่นแล้ว!`, "success");
       updateDB();
@@ -289,7 +289,7 @@ const isInCollection = computed(() => {
 });
 
 const updateDB = () => {
-  axios.get("https://n8n.3xbun.com/webhook/bgg-api/collection").then((res) => {
+  axios.get("/n8n-api/webhook/bgg-api/collection").then((res) => {
     DB.value = res.data;
     localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
   });

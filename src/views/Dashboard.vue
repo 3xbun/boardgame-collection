@@ -296,7 +296,7 @@ const play = (id, gameName) => {
   playLoadingId.value = id;
   axios
     .patch(
-      "https://n8n.3xbun.com/webhook/00325598-78e4-4094-ad41-a5faf5778670/bgg-api/play/" +
+      "/n8n-api/webhook/00325598-78e4-4094-ad41-a5faf5778670/bgg-api/play/" +
         id,
     )
     .then((res) => {
@@ -321,7 +321,7 @@ const play = (id, gameName) => {
 };
 
 const fetchCollectionSilently = () => {
-  axios.get("https://n8n.3xbun.com/webhook/bgg-api/collection").then((res) => {
+  axios.get("/n8n-api/webhook/bgg-api/collection").then((res) => {
     DB.value = res.data;
     localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
   });
@@ -333,7 +333,7 @@ onMounted(() => {
     DB.value = JSON.parse(localStorage.getItem("BoardgameDB"));
   }
 
-  axios.get("https://n8n.3xbun.com/webhook/bgg-api/collection").then((res) => {
+  axios.get("/n8n-api/webhook/bgg-api/collection").then((res) => {
     DB.value = res.data;
     localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
   });

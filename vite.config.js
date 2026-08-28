@@ -28,6 +28,11 @@ export default defineConfig(({ mode }) => {
             ? { "xc-token": env.NOCODB_API_TOKEN }
             : {},
         },
+        "/n8n-api": {
+          target: "https://n8n.3xbun.com",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/n8n-api/, ""),
+        },
       },
     },
   };
