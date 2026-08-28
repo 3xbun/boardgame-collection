@@ -24,26 +24,28 @@
     <div class="stats-panel">
       <div class="stat-card">
         <span class="stat-label">{{ $t('systemGames') }}</span>
-        <span class="stat-value">{{ DB.length }} <small>เกม</small></span>
+        <span class="stat-value"
+          >{{ DB.length }} <small>{{ $t('gamesUnit') }}</small></span
+        >
       </div>
       <div class="stat-card">
         <span class="stat-label">{{ $t('totalPlayed') }}</span>
         <span class="stat-value text-gold"
-          >{{ totalPlays }} <small>ครั้ง</small></span
+          >{{ totalPlays }} <small>{{ $t('playsUnit') }}</small></span
         >
       </div>
     </div>
 
     <!-- Sorting Selection Chips -->
     <div class="sort-section">
-      <span class="sort-title">จัดเรียงตาม</span>
+      <span class="sort-title">{{ $t('sortBy') }}</span>
       <div class="sort-chips">
         <button
           :class="['sort-chip', sortBy === 'alphabetically' ? 'active' : '']"
           @click="handleSort('alphabetically')"
         >
           <i class="fa-duotone fa-font"></i>
-          <span>ชื่อเกม</span>
+          <span>{{ $t('gameName') }}</span>
           <span v-if="sortBy === 'alphabetically'" class="arrow-indicator">
             <i
               v-if="sortOrder === 'asc'"
@@ -58,7 +60,7 @@
           @click="handleSort('played')"
         >
           <i class="fa-duotone fa-gamepad"></i>
-          <span>เล่นไปแล้ว</span>
+          <span>{{ $t('played') }}</span>
           <span v-if="sortBy === 'played'" class="arrow-indicator">
             <i
               v-if="sortOrder === 'asc'"
@@ -73,7 +75,7 @@
           @click="handleSort('playtime')"
         >
           <i class="fa-duotone fa-clock"></i>
-          <span>เวลาเล่น</span>
+          <span>{{ $t('playtime') }}</span>
           <span v-if="sortBy === 'playtime'" class="arrow-indicator">
             <i
               v-if="sortOrder === 'asc'"
@@ -88,7 +90,7 @@
           @click="handleSort('players')"
         >
           <i class="fa-duotone fa-users"></i>
-          <span>ผู้เล่น</span>
+          <span>{{ $t('players') }}</span>
           <span v-if="sortBy === 'players'" class="arrow-indicator">
             <i
               v-if="sortOrder === 'asc'"
@@ -131,11 +133,24 @@
           <div class="image-overlay">
             <span class="overlay-text"
               ><i class="fa-duotone fa-magnifying-glass-plus"></i>
-              รายละเอียด</span
+              {{ $t('details') }}</span
             >
           </div>
           <div v-if="Number(item.Played) > 0" class="played-badge">
             <i class="fa-duotone fa-award"></i> {{ item.Played }}
+          </div>
+          <div
+            v-if="gameLanguage(item)"
+            class="language-badge"
+            :title="$t('languageBadge', { language: gameLanguageLabel(item) })"
+          >
+            <img
+              class="flag"
+              :src="gameFlagImage(item)"
+              :alt="gameLanguageLabel(item)"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </div>
 
@@ -148,18 +163,18 @@
           <div class="game-meta">
             <div class="meta-item">
               <i class="fa-duotone fa-users text-cyan"></i>
-              <span>{{ item.Player }} คน</span>
+              <span>{{ item.Player }} {{ $t('people') }}</span>
             </div>
             <div class="meta-item">
               <i class="fa-duotone fa-clock text-violet"></i>
-              <span>{{ item.Playtime }} นาที</span>
+              <span>{{ item.Playtime }} {{ $t('minutes') }}</span>
             </div>
             <div class="meta-item">
               <i class="fa-duotone fa-gamepad text-emerald"></i>
               <span
-                >เล่นแล้ว:
+                >{{ $t('playedLabel') }}
                 <strong class="text-white">{{ item.Played }}</strong>
-                ครั้ง</span
+                {{ $t('playsUnit') }}</span
               >
             </div>
           </div>
@@ -169,23 +184,23 @@
             <button
               class="action-btn view-btn"
               @click="openModal(item.BGG_ID)"
-              title="ดูข้อมูลเพิ่มเติม"
+              :title="$t('viewMore')"
             >
               <i class="fa-duotone fa-eye"></i>
-              <span>ดู</span>
+              <span>{{ $t('view') }}</span>
             </button>
             <button
               class="action-btn play-btn"
               :disabled="playLoadingId === item.Id"
               @click="play(item.Id, item.Name)"
-              title="บันทึกว่าเล่นเกมนี้"
+              :title="$t('playLogTitle')"
             >
               <i
                 v-if="playLoadingId === item.Id"
                 class="fa-duotone fa-spinner spin-loader"
               ></i>
               <i v-else class="fa-duotone fa-play"></i>
-              <span>เล่น</span>
+              <span>{{ $t('play') }}</span>
             </button>
           </div>
         </div>
@@ -199,6 +214,7 @@ import { computed, onBeforeUnmount, onMounted, provide, ref } from "vue";
 import axios from "axios";
 import BoardGame from "../components/BoardGame.vue";
 import { showToast } from "../toast.js";
+import { i18n } from "../i18n.js";
 import { listGames, updateGame } from "../nocoApi.js";
 
 const bgID = ref("");
@@ -241,6 +257,22 @@ const observeCards = () => {
 const totalPlays = computed(() => {
   return DB.value.reduce((sum, item) => sum + (Number(item.Played) || 0), 0);
 });
+
+const gameLanguage = (item) => {
+  const lang = String(item.Language || "").toLowerCase();
+  return lang === "th" || lang === "en" ? lang : null;
+};
+
+const gameFlagImage = (item) => {
+  return gameLanguage(item) === "th"
+    ? "https://flagsapi.com/TH/flat/64.png"
+    : "https://flagsapi.com/GB/flat/64.png";
+};
+
+const gameLanguageLabel = (item) => {
+  const lang = gameLanguage(item);
+  return lang === "th" ? i18n.global.t("thai") : i18n.global.t("english");
+};
 
 const openModal = (bggId) => {
   bgID.value = bggId;
@@ -305,7 +337,10 @@ const play = (id, gameName) => {
         localStorage.setItem("BoardgameDB", JSON.stringify(DB.value));
       }
       playLoadingId.value = null;
-      showToast(`บันทึกการเล่น "${gameName}" เรียบร้อยแล้ว!`, "success");
+      showToast(
+        i18n.global.t("playLogged", { name: gameName }),
+        "success",
+      );
 
       // Silently sync with backend database in the background
       fetchCollectionSilently();
@@ -313,7 +348,7 @@ const play = (id, gameName) => {
     .catch((err) => {
       console.error(err);
       playLoadingId.value = null;
-      showToast("เกิดข้อผิดพลาดในการบันทึกข้อมูล", "error");
+      showToast(i18n.global.t("saveError"), "error");
     });
 };
 
@@ -657,6 +692,29 @@ h1 {
   align-items: center;
   gap: 0.2rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.language-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: rgba(11, 15, 25, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2rem;
+  padding: 0.1rem 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: default;
+}
+
+.language-badge .flag {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Card Information Body */

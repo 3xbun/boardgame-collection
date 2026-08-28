@@ -24,7 +24,7 @@
         <input
           type="text"
           v-model="searchText"
-          placeholder="พิมพ์ชื่อบอร์ดเกมเพื่อค้นหา..."
+          placeholder="$t('searchGamePlaceholder')"
           @input="search"
         />
 
@@ -32,7 +32,7 @@
           v-if="searchText"
           class="clear-btn"
           @click="clearSearch"
-          title="ล้างคำค้นหา"
+          :title="$t('clearSearchTitle')"
         >
           <i class="fa-duotone fa-circle-xmark"></i>
         </button>
@@ -82,7 +82,7 @@
         <!-- No Results Found -->
         <li v-else class="search-empty">
           <i class="fa-duotone fa-triangle-exclamation"></i>
-          <span>ไม่พบข้อมูลเกมที่ตรงกับคำค้นหา</span>
+          <span>{{ $t('noResults') }}</span>
         </li>
       </ul>
     </div>
@@ -98,7 +98,7 @@
             alt="Board game cover"
           />
           <div v-if="isInCollection" class="owned-tag">
-            <i class="fa-duotone fa-circle-check"></i> สะสมแล้ว
+            <i class="fa-duotone fa-circle-check"></i> {{ $t('owned') }}
           </div>
         </div>
 
@@ -120,14 +120,14 @@
                   bgData.minplayers.value === bgData.maxplayers.value
                     ? bgData.minplayers.value
                     : `${bgData.minplayers.value}-${bgData.maxplayers.value}`
-                }}
-                คน
-              </span>
+                  }}
+                  {{ $t('people') }}
+                </span>
             </div>
 
             <div class="preview-stat-pill bg-violet">
               <i class="fa-duotone fa-clock"></i>
-              <span>{{ bgData.playingtime.value }} นาที</span>
+              <span>{{ bgData.playingtime.value }} {{ $t('minutes') }}</span>
             </div>
           </div>
 
@@ -145,7 +145,7 @@
             </button>
             <button v-else class="add-collection-btn owned-disabled" disabled>
               <i class="fa-duotone fa-circle-check"></i>
-              <span>มีเกมนี้อยู่ในคอลเลคชั่นแล้ว</span>
+              <span>{{ $t('alreadyInCollection') }}</span>
             </button>
           </div>
         </div>
@@ -159,6 +159,7 @@ import { ref, onMounted, computed } from "vue";
 import { getBoardGame, searchBoardGames } from "../bggApi.js";
 import { addGame, listGames } from "../nocoApi.js";
 import { showToast } from "../toast.js";
+import { i18n } from "../i18n.js";
 
 const searchText = ref("");
 const DB = ref([]);
@@ -192,7 +193,7 @@ const search = () => {
       .catch((err) => {
         console.error(err);
         isSearching.value = false;
-        showToast("เกิดข้อผิดพลาดในการค้นหาข้อมูล", "error");
+        showToast(i18n.global.t("searchError"), "error");
       });
   }, 400);
 };
@@ -218,7 +219,10 @@ const getBG = (id, fallback = null) => {
 
         bgData.value = {
           ...fallback,
-          name: fallback.name?.value || fallback.name || "ไม่ทราบชื่อเกม",
+          name:
+            fallback.name?.value ||
+            fallback.name ||
+            i18n.global.t("unknownGameName"),
           id,
           minplayers: { value: "-" },
           maxplayers: { value: "-" },
@@ -235,7 +239,7 @@ const getBG = (id, fallback = null) => {
       if (name && name.length > 0) {
         const primaryName = name.find((n) => n.type === "primary");
         bgData.value.name =
-          primaryName?.value || name[0]?.value || "ไม่ทราบชื่อเกม";
+          primaryName?.value || name[0]?.value || i18n.global.t("unknownGameName");
 
         const thaiName = name.find((n) => thaiLang.test(n.value));
         if (thaiName) {
@@ -244,12 +248,12 @@ const getBG = (id, fallback = null) => {
       } else if (name) {
         bgData.value.name = name.value;
       } else {
-        bgData.value.name = "ไม่ทราบชื่อเกม";
+        bgData.value.name = i18n.global.t("unknownGameName");
       }
     })
     .catch((err) => {
       console.error(err);
-      showToast("เกิดข้อผิดพลาดในการดึงข้อมูลบอร์ดเกม", "error");
+      showToast(i18n.global.t("fetchGameError"), "error");
     });
 };
 
@@ -271,14 +275,17 @@ const addToCollection = () => {
 
   addGame({ ...payload, Played: 0 })
     .then(() => {
-      showToast(`เพิ่ม "${bgData.value.name}" เข้าคอลเลคชั่นแล้ว!`, "success");
+      showToast(
+        i18n.global.t("gameAdded", { name: bgData.value.name }),
+        "success",
+      );
       updateDB();
       isAdding.value = false;
     })
     .catch((err) => {
       console.error(err);
       isAdding.value = false;
-      showToast("เกิดข้อผิดพลาดในการเพิ่มเข้าคอลเลคชั่น", "error");
+      showToast(i18n.global.t("addError"), "error");
     });
 };
 

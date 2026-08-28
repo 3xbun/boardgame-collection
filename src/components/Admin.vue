@@ -61,7 +61,7 @@
 					<button class="primary-btn" :disabled="saving" @click="addSelectedGame">
 						<i v-if="saving" class="fa-duotone fa-spinner spin-loader"></i>
 						<i v-else class="fa-duotone fa-circle-plus"></i>
-						<span>เพิ่มเกมนี้</span>
+						<span>{{ $t('addThisGame') }}</span>
 					</button>
 				</div>
 			</section>
@@ -69,29 +69,29 @@
 			<section class="admin-panel collection-panel">
 				<div class="section-heading">
 					<div>
-						<span class="eyebrow">หน้า {{ pageNumber }}</span>
-						<h2>ข้อมูลในระบบ</h2>
+						<span class="eyebrow">{{ $t('page') }} {{ pageNumber }}</span>
+						<h2>{{ $t('database') }}</h2>
 					</div>
 					<button class="quiet-btn" @click="loadGames" :disabled="loading">
 						<i class="fa-duotone fa-arrows-rotate" :class="{ spin: loading }"></i>
-						<span>รีเฟรช</span>
+						<span>{{ $t('refresh') }}</span>
 					</button>
 				</div>
 				<div v-if="!loading && games.length" class="pagination">
 					<button class="quiet-btn" :disabled="pageNumber === 1" @click="loadGames(pageNumber - 1)">
-						<i class="fa-duotone fa-chevron-left"></i><span>ก่อนหน้า</span>
+						<i class="fa-duotone fa-chevron-left"></i><span>{{ $t('previous') }}</span>
 					</button>
-					<span>หน้า {{ pageNumber }}</span>
+					<span>{{ $t('page') }} {{ pageNumber }}</span>
 					<button class="quiet-btn" :disabled="!hasNext" @click="loadGames(pageNumber + 1)">
-						<span>ถัดไป</span><i class="fa-duotone fa-chevron-right"></i>
+						<span>{{ $t('next') }}</span><i class="fa-duotone fa-chevron-right"></i>
 					</button>
 				</div>
 
-				<div v-if="loading" class="empty-admin">กำลังโหลดข้อมูล...</div>
-				<div v-else-if="games.length === 0" class="empty-admin">ยังไม่มีข้อมูลบอร์ดเกม</div>
+				<div v-if="loading" class="empty-admin">{{ $t('loadingData') }}</div>
+				<div v-else-if="games.length === 0" class="empty-admin">{{ $t('noGameData') }}</div>
 				<div v-else class="table-wrap">
 					<table>
-						<thead><tr><th>ชื่อเกม</th><th>BGG ID</th><th>ผู้เล่น</th><th>เวลา</th><th>เล่นแล้ว</th><th></th></tr></thead>
+						<thead><tr><th>{{ $t('gameName') }}</th><th>BGG ID</th><th>{{ $t('playerCount') }}</th><th>{{ $t('time') }}</th><th>{{ $t('played') }}</th><th></th></tr></thead>
 						<tbody>
 							<tr v-for="game in sortedGames" :key="game.Id">
 								<td class="game-cell">
@@ -100,10 +100,10 @@
 								</td>
 								<td>{{ game.BGG_ID }}</td>
 								<td>{{ game.Player || "-" }}</td>
-								<td>{{ game.Playtime || 0 }} นาที</td>
+								<td>{{ game.Playtime || 0 }} {{ $t('minutes') }}</td>
 								<td>{{ game.Played || 0 }}</td>
 								<td class="row-actions">
-									<button class="icon-btn danger-btn" title="ลบ" @click="removeGame(game)"><i class="fa-duotone fa-trash"></i></button>
+									<button class="icon-btn danger-btn" :title="$t('delete')" @click="removeGame(game)"><i class="fa-duotone fa-trash"></i></button>
 								</td>
 							</tr>
 						</tbody>
@@ -120,6 +120,7 @@ import { computed, onMounted, ref } from "vue";
 import { getBoardGame, searchBoardGames } from "../bggApi.js";
 import { addGame, deleteGame, listGames } from "../nocoApi.js";
 import { showToast } from "../toast.js";
+import { i18n } from "../i18n.js";
 
 const ADMIN_PASSWORD = "bgg";
 const authenticated = ref(sessionStorage.getItem("admin_authenticated") === "true");
@@ -145,7 +146,7 @@ const sortedGames = computed(() =>
 
 const login = () => {
 	if (password.value !== ADMIN_PASSWORD) {
-		showToast("รหัสผ่านไม่ถูกต้อง", "error");
+		showToast(i18n.global.t("wrongPassword"), "error");
 		return;
 	}
 	authenticated.value = true;
@@ -165,7 +166,7 @@ const loadGames = (page = 1) => {
 		games.value = pageGames;
 		pageNumber.value = page;
 		hasNext.value = nextPage;
-	}).catch(() => showToast("โหลดข้อมูลไม่สำเร็จ", "error")).finally(() => { loading.value = false; });
+	}).catch(() => showToast(i18n.global.t("loadError"), "error")).finally(() => { loading.value = false; });
 };
 
 const search = () => {
@@ -176,7 +177,7 @@ const search = () => {
 	}
 	searching.value = true;
 	searchTimeout = setTimeout(() => {
-		searchBoardGames(searchText.value).then((items) => { results.value = items; }).catch(() => showToast("ค้นหาไม่สำเร็จ", "error")).finally(() => { searching.value = false; });
+		searchBoardGames(searchText.value).then((items) => { results.value = items; }).catch(() => showToast(i18n.global.t("searchNotSuccessful"), "error")).finally(() => { searching.value = false; });
 	}, 400);
 };
 
@@ -188,7 +189,7 @@ const selectGame = (item) => {
 
 const gameName = (game) => {
 	const names = Array.isArray(game?.name) ? game.name : [game?.name];
-	return names.find((item) => item?.type === "primary")?.value || names[0]?.value || "ไม่ทราบชื่อเกม";
+	return names.find((item) => item?.type === "primary")?.value || names[0]?.value || i18n.global.t("unknownGameName");
 };
 
 const addSelectedGame = () => {
@@ -199,19 +200,19 @@ const addSelectedGame = () => {
 	const minPlayers = game.minplayers?.value || 0;
 	const maxPlayers = game.maxplayers?.value || minPlayers;
 	addGame({ BGG_ID: game.id, Name: name, Image: game.image, Playtime: game.playingtime?.value || 0, Player: `${minPlayers}-${maxPlayers}`, Played: 0 }).then(() => {
-		showToast("เพิ่มเกมแล้ว", "success");
+		showToast(i18n.global.t("gameAddedShort"), "success");
 		selectedGame.value = null;
 		searchText.value = "";
 		loadGames();
-	}).catch(() => showToast("เพิ่มเกมไม่สำเร็จ", "error")).finally(() => { saving.value = false; });
+	}).catch(() => showToast(i18n.global.t("addGameError"), "error")).finally(() => { saving.value = false; });
 };
 
 const removeGame = (game) => {
-	if (!window.confirm(`ต้องการลบ "${game.Name}" หรือไม่?`)) return;
+	if (!window.confirm(i18n.global.t("confirmDelete", { name: game.Name }))) return;
 	deleteGame(game.Id).then(() => {
 		games.value = games.value.filter((item) => item.Id !== game.Id);
-		showToast("ลบเกมแล้ว", "success");
-	}).catch(() => showToast("ลบข้อมูลไม่สำเร็จ", "error"));
+		showToast(i18n.global.t("deleted"), "success");
+	}).catch(() => showToast(i18n.global.t("deleteError"), "error"));
 };
 
 onMounted(() => {

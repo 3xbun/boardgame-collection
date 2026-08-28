@@ -31,7 +31,7 @@
                     ? bgData.minplayers.value
                     : `${bgData.minplayers.value} – ${bgData.maxplayers.value}`
                 }}
-                คน
+                {{ $t('people') }}
               </span>
             </div>
 
@@ -44,14 +44,16 @@
                     ? bgData.minplaytime.value
                     : `${bgData.minplaytime.value} – ${bgData.maxplaytime.value}`
                 }}
-                นาที
+                {{ $t('minutes') }}
               </span>
             </div>
 
             <div class="info-pill pill-amber">
               <i class="fa-duotone fa-cake-candles"></i>
-              <span class="pill-label">อายุขั้นต่ำ</span>
-              <span class="pill-text">{{ bgData.minage.value }}+ ปี</span>
+              <span class="pill-label">{{ $t('minAge') }}</span>
+              <span class="pill-text"
+                >{{ bgData.minage.value }}+ {{ $t('yearsUnit') }}</span
+              >
             </div>
           </div>
         </div>
@@ -62,7 +64,7 @@
           class="youtube-tutorial-btn"
           :href="
             'https://www.youtube.com/results?search_query=' +
-            encodeURIComponent(bgData.name + ' วิธีเล่น')
+            encodeURIComponent(bgData.name + ' ' + $t('wayToPlay'))
           "
           :title="$t('watchTutorial')"
         >
@@ -77,7 +79,7 @@
         >
           <div class="tags-header">
             <i class="fa-duotone fa-tags"></i>
-            <span>แท็ก & กลไกของเกม</span>
+            <span>{{ $t('tagsMechanics') }}</span>
           </div>
           <div class="tags-cloud">
             <span class="tag-badge" v-for="link in categories" :key="link.id">
@@ -101,6 +103,7 @@
 import { computed, inject, onMounted, ref } from "vue";
 import { getBoardGame } from "../bggApi.js";
 import { showToast } from "../toast.js";
+import { i18n } from "../i18n.js";
 
 const bgData = ref({});
 const showModal = inject("showModal");
@@ -134,7 +137,9 @@ const getBG = (id) => {
       if (name && name.length > 0) {
         const primaryName = name.find((n) => n.type === "primary");
         bgData.value.name =
-          primaryName?.value || name[0]?.value || "ไม่ทราบชื่อเกม";
+          primaryName?.value ||
+          name[0]?.value ||
+          i18n.global.t("unknownGameName");
 
         const thaiName = name.find((n) => thaiLang.test(n.value));
         if (thaiName) {
@@ -143,14 +148,14 @@ const getBG = (id) => {
       } else if (name) {
         bgData.value.name = name.value;
       } else {
-        bgData.value.name = "ไม่ทราบชื่อเกม";
+        bgData.value.name = i18n.global.t("unknownGameName");
       }
 
       ready.value = true;
     })
     .catch((err) => {
       console.error(err);
-      showToast("เกิดข้อผิดพลาดในการโหลดข้อมูลบอร์ดเกม", "error");
+      showToast(i18n.global.t("loadGameError"), "error");
     });
 };
 
