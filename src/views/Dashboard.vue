@@ -7,13 +7,13 @@
           <i class="fa-duotone fa-game-board-simple header-icon"></i>
         </div>
         <div>
-          <h1>คอลเลคชั่น</h1>
-          <p class="subtitle">คลังบอร์ดเกมส่วนตัวของคุณ</p>
+          <h1>{{ $t('collection') }}</h1>
+          <p class="subtitle">{{ $t('collectionSubtitle') }}</p>
         </div>
       </div>
-      <router-link to="/add" class="add-btn">
+      <router-link to="/admin" class="add-btn">
         <i class="fa-duotone fa-plus"></i>
-        <span>เพิ่มเกม</span>
+        <span>{{ $t('addGame') }}</span>
       </router-link>
     </header>
 
@@ -23,11 +23,11 @@
     <!-- Stats Dashboard Widget -->
     <div class="stats-panel">
       <div class="stat-card">
-        <span class="stat-label">เกมในระบบ</span>
+        <span class="stat-label">{{ $t('systemGames') }}</span>
         <span class="stat-value">{{ DB.length }} <small>เกม</small></span>
       </div>
       <div class="stat-card">
-        <span class="stat-label">เล่นรวมทั้งหมด</span>
+        <span class="stat-label">{{ $t('totalPlayed') }}</span>
         <span class="stat-value text-gold"
           >{{ totalPlays }} <small>ครั้ง</small></span
         >
@@ -103,16 +103,22 @@
     <!-- Boardgames Cards Grid -->
     <div v-if="DB.length === 0" class="empty-state">
       <i class="fa-duotone fa-box-open-full empty-icon"></i>
-      <h3>ยังไม่มีบอร์ดเกมในคอลเลคชั่น</h3>
-      <p>เริ่มสะสมเกมโปรดของคุณโดยการคลิกปุ่ม "เพิ่มเกม" ด้านบน</p>
-      <router-link to="/add" class="add-btn inline-add">
+      <h3>{{ $t('noGames') }}</h3>
+      <p>{{ $t('emptyHint') }}</p>
+      <router-link to="/admin" class="add-btn inline-add">
         <i class="fa-duotone fa-plus"></i>
-        <span>เพิ่มเกมแรกของคุณ</span>
+        <span>{{ $t('firstGame') }}</span>
       </router-link>
     </div>
 
     <div v-else class="cards-grid">
-      <div v-for="item in filterDB" :key="item.Id" class="game-card">
+      <div
+        v-for="item in filterDB"
+        :key="item.Id"
+        :ref="setCardRef"
+        :data-game-id="item.Id"
+        :class="['game-card', { 'is-visible': visibleCards.has(item.Id) }]"
+      >
         <!-- Game Thumbnail with Cover fit & Hover Zoom -->
         <div class="card-image-wrapper" @click="openModal(item.BGG_ID)">
           <img
@@ -120,6 +126,7 @@
             class="card-image"
             alt="Game image"
             loading="lazy"
+            decoding="async"
           />
           <div class="image-overlay">
             <span class="overlay-text"
@@ -188,7 +195,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, provide, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, provide, ref } from "vue";
 import axios from "axios";
 import BoardGame from "../components/BoardGame.vue";
 import { showToast } from "../toast.js";
@@ -201,6 +208,34 @@ const DB = ref([]);
 const sortBy = ref("alphabetically");
 const sortOrder = ref("asc");
 const playLoadingId = ref(null);
+const visibleCards = ref(new Set());
+let cardObserver;
+
+const setCardRef = (element) => {
+  if (!element || !cardObserver) return;
+  cardObserver.observe(element);
+};
+
+const observeCards = () => {
+  if (!("IntersectionObserver" in window)) {
+    visibleCards.value = new Set(DB.value.map((item) => item.Id));
+    return;
+  }
+
+  cardObserver = new IntersectionObserver(
+    (entries) => {
+      const nextVisibleCards = new Set(visibleCards.value);
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          nextVisibleCards.add(Number(entry.target.dataset.gameId));
+          cardObserver.unobserve(entry.target);
+        }
+      });
+      visibleCards.value = nextVisibleCards;
+    },
+    { rootMargin: "0px 0px 180px", threshold: 0.1 },
+  );
+};
 
 const totalPlays = computed(() => {
   return DB.value.reduce((sum, item) => sum + (Number(item.Played) || 0), 0);
@@ -293,6 +328,7 @@ const fetchCollectionSilently = () => {
 };
 
 onMounted(() => {
+  observeCards();
   if (localStorage.getItem("BoardgameDB")) {
     DB.value = JSON.parse(localStorage.getItem("BoardgameDB"));
   }
@@ -301,6 +337,10 @@ onMounted(() => {
     DB.value = res.data;
     localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
   });
+});
+
+onBeforeUnmount(() => {
+  cardObserver?.disconnect();
 });
 </script>
 
@@ -532,6 +572,13 @@ h1 {
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  transform: translateY(1rem) scale(0.98);
+}
+
+.game-card.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 .game-card:hover {
@@ -541,6 +588,15 @@ h1 {
     0 12px 20px -8px var(--primary-glow),
     0 4px 6px -2px rgba(0, 0, 0, 0.5);
   background: rgba(30, 41, 59, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card,
+  .game-card.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* Thumbnail Wrapper with Overlay */

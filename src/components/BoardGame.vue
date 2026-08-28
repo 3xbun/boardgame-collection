@@ -3,7 +3,7 @@
     <div class="modal-backdrop" v-if="showModal && ready" @click.self="close()">
       <div class="modal-container">
         <!-- Close Button (Top Right) -->
-        <button class="modal-close-btn" @click="close()" title="ปิดหน้าต่าง">
+        <button class="modal-close-btn" @click="close()" :title="$t('close')">
           <i class="fa-duotone fa-xmark"></i>
         </button>
 
@@ -24,7 +24,7 @@
           <div class="modal-info-list">
             <div class="info-pill pill-cyan">
               <i class="fa-duotone fa-users"></i>
-              <span class="pill-label">ผู้เล่น</span>
+              <span class="pill-label">{{ $t('players') }}</span>
               <span class="pill-text">
                 {{
                   bgData.minplayers.value === bgData.maxplayers.value
@@ -37,7 +37,7 @@
 
             <div class="info-pill pill-violet">
               <i class="fa-duotone fa-clock"></i>
-              <span class="pill-label">เวลาเล่น</span>
+              <span class="pill-label">{{ $t('playtime') }}</span>
               <span class="pill-text">
                 {{
                   bgData.minplaytime.value === bgData.maxplaytime.value
@@ -64,10 +64,10 @@
             'https://www.youtube.com/results?search_query=' +
             encodeURIComponent(bgData.name + ' วิธีเล่น')
           "
-          title="ค้นหาวิดีโอวิธีเล่นบน YouTube"
+          :title="$t('watchTutorial')"
         >
           <i class="fa-brands fa-youtube"></i>
-          <span>ดูวิธีสอนเล่นบน YouTube</span>
+          <span>{{ $t('watchTutorial') }}</span>
         </a>
 
         <!-- Categories & Mechanics Tags -->
@@ -88,7 +88,7 @@
 
         <!-- Description Block -->
         <div class="modal-description-box">
-          <h3>คำอธิบายเกม</h3>
+          <h3>{{ $t('description') }}</h3>
           <div class="desc-divider"></div>
           <div class="description-text" v-html="bgData.description"></div>
         </div>
@@ -98,8 +98,8 @@
 </template>
 
 <script setup>
-import axios from "axios";
 import { computed, inject, onMounted, ref } from "vue";
+import { getBoardGame } from "../bggApi.js";
 import { showToast } from "../toast.js";
 
 const bgData = ref({});
@@ -123,25 +123,27 @@ const close = () => {
 };
 
 const getBG = (id) => {
-  axios
-    .post("https://n8n.3xbun.com/webhook/bgg-api/get-bg", { id: id })
-    .then((res) => {
-      const data = res.data[0].items.item;
+  getBoardGame(id)
+    .then((data) => {
+
       const name = data.name;
       const thaiLang = /[ก-๙]/;
 
       bgData.value = data;
 
       if (name && name.length > 0) {
-        bgData.value.name = name.filter((n) => n.type == "primary")[0].value;
+        const primaryName = name.find((n) => n.type === "primary");
+        bgData.value.name =
+          primaryName?.value || name[0]?.value || "ไม่ทราบชื่อเกม";
 
-        if (name.filter((n) => thaiLang.test(n.value)).length > 0) {
-          bgData.value.name = name.filter((n) =>
-            thaiLang.test(n.value),
-          )[0].value;
+        const thaiName = name.find((n) => thaiLang.test(n.value));
+        if (thaiName) {
+          bgData.value.name = thaiName.value;
         }
       } else if (name) {
         bgData.value.name = name.value;
+      } else {
+        bgData.value.name = "ไม่ทราบชื่อเกม";
       }
 
       ready.value = true;

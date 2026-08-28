@@ -1,5 +1,9 @@
 <template>
   <div class="app-layout">
+    <button class="language-toggle" @click="toggleLanguage" :title="$t('language')">
+      <i class="fa-duotone fa-language"></i>
+      <span>{{ currentLanguage === 'th' ? 'EN' : 'ไทย' }}</span>
+    </button>
     <div class="container">
       <RouterView v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -25,7 +29,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { toasts } from './toast.js';
+import { i18n, setLanguage } from './i18n.js';
+
+const currentLanguage = computed(() => i18n.global.locale.value);
+const toggleLanguage = () => setLanguage(currentLanguage.value === 'th' ? 'en' : 'th');
 </script>
 
 <style scoped>
@@ -35,6 +44,23 @@ import { toasts } from './toast.js';
   justify-content: center;
   align-items: flex-start;
   padding: 1.5rem 1rem 4rem;
+}
+
+.language-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 20;
+  background: rgba(30, 41, 59, 0.9);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.language-toggle:hover {
+  border-color: var(--secondary);
+  color: white;
 }
 
 .container {

@@ -4,9 +4,9 @@
     <header class="page-header">
       <router-link to="/" class="back-link">
         <i class="fa-duotone fa-chevron-left"></i>
-        <span>ดูคอลเลคชั่น</span>
+        <span>{{ $t('backToCollection') }}</span>
       </router-link>
-      <h1>เพิ่มบอร์ดเกม</h1>
+      <h1>{{ $t('addGame') }}</h1>
     </header>
 
     <!-- Search Input Bar -->
@@ -141,7 +141,7 @@
             >
               <i v-if="isAdding" class="fa-duotone fa-spinner spin-loader"></i>
               <i v-else class="fa-duotone fa-circle-plus"></i>
-              <span>เพิ่มเข้าคอลเลคชั่น</span>
+              <span>{{ $t('addToCollection') }}</span>
             </button>
             <button v-else class="add-collection-btn owned-disabled" disabled>
               <i class="fa-duotone fa-circle-check"></i>
@@ -157,13 +157,14 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { getBoardGame, searchBoardGames } from "../bggApi.js";
 import { showToast } from "../toast.js";
 
 const searchText = ref("");
 const DB = ref([]);
 const result = ref("");
 const bg = ref("");
-const bgData = ref("");
+const bgData = ref(null);
 
 const isSearching = ref(false);
 const isAdding = ref(false);
@@ -183,12 +184,9 @@ const search = () => {
 
   // Debounce API requests for 400ms
   searchTimeout.value = setTimeout(() => {
-    axios
-      .post("https://n8n.3xbun.com/webhook/bgg-api/search", {
-        keyword: searchText.value,
-      })
-      .then((res) => {
-        result.value = res.data[0]?.items?.item || [];
+    searchBoardGames(searchText.value)
+      .then((items) => {
+        result.value = items;
         isSearching.value = false;
       })
       .catch((err) => {
@@ -206,30 +204,47 @@ const clearSearch = () => {
 
 const selectGame = (item) => {
   bg.value = item;
-  getBG(item.id);
+  getBG(item.id, item);
   result.value = "";
 };
 
-const getBG = (id) => {
-  axios
-    .post("https://n8n.3xbun.com/webhook/bgg-api/get-bg", { id: id })
-    .then((res) => {
-      const data = res.data[0].items.item;
+const getBG = (id, fallback = null) => {
+  getBoardGame(id)
+    .then((data) => {
+      if (!data) {
+        if (!fallback) {
+          throw new Error("Board game details were not returned");
+        }
+
+        bgData.value = {
+          ...fallback,
+          name: fallback.name?.value || fallback.name || "ไม่ทราบชื่อเกม",
+          id,
+          minplayers: { value: "-" },
+          maxplayers: { value: "-" },
+          playingtime: { value: "-" },
+        };
+        return;
+      }
+
       const name = data.name;
       const thaiLang = /[ก-๙]/;
 
       bgData.value = data;
 
       if (name && name.length > 0) {
-        bgData.value.name = name.filter((n) => n.type == "primary")[0].value;
+        const primaryName = name.find((n) => n.type === "primary");
+        bgData.value.name =
+          primaryName?.value || name[0]?.value || "ไม่ทราบชื่อเกม";
 
-        if (name.filter((n) => thaiLang.test(n.value)).length > 0) {
-          bgData.value.name = name.filter((n) =>
-            thaiLang.test(n.value),
-          )[0].value;
+        const thaiName = name.find((n) => thaiLang.test(n.value));
+        if (thaiName) {
+          bgData.value.name = thaiName.value;
         }
       } else if (name) {
         bgData.value.name = name.value;
+      } else {
+        bgData.value.name = "ไม่ทราบชื่อเกม";
       }
     })
     .catch((err) => {
@@ -240,11 +255,11 @@ const getBG = (id) => {
 
 const addToCollection = () => {
   isAdding.value = true;
-  const playtime = bgData.value.playingtime.value;
+  const playtime = bgData.value.playingtime?.value || 0;
   const player =
-    bgData.value.minplayers.value === bgData.value.maxplayers.value
-      ? bgData.value.minplayers.value
-      : `${bgData.value.minplayers.value}-${bgData.value.maxplayers.value}`;
+    bgData.value.minplayers?.value === bgData.value.maxplayers?.value
+      ? bgData.value.minplayers?.value || 0
+      : `${bgData.value.minplayers?.value || 0}-${bgData.value.maxplayers?.value || 0}`;
 
   const payload = {
     BGG_ID: bgData.value.id,

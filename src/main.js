@@ -5,11 +5,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import Dashboard from './views/Dashboard.vue';
 import AddGame from './views/AddGame.vue';
+import Admin from './components/Admin.vue';
+import { i18n } from './i18n.js';
 
 const routes = [
   { path: '/', component: Dashboard },
   { path: '/dashboard', component: Dashboard },
   { path: '/add', component: AddGame },
+  { path: '/admin', component: Admin },
 ]
 
 const router = createRouter({
@@ -17,4 +20,4 @@ const router = createRouter({
   routes,
 })
 
-createApp(App).use(router).mount('#app')
+createApp(App).use(router).use(i18n).mount('#app')
