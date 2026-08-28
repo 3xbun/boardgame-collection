@@ -700,21 +700,19 @@ h1 {
   left: 0.5rem;
   background: rgba(11, 15, 25, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 2rem;
-  padding: 0.1rem 0.35rem;
+  border-radius: 50%;
+  width: 1.35rem;
+  height: 1.35rem;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   cursor: default;
+  overflow: hidden;
 }
 
 .language-badge .flag {
-  width: 1.35rem;
-  height: 1.35rem;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
+  height: 2rem;
 }
 
 /* Card Information Body */
