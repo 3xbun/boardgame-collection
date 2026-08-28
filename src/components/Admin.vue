@@ -118,9 +118,9 @@
 import axios from "axios";
 import { computed, onMounted, ref } from "vue";
 import { getBoardGame, searchBoardGames } from "../bggApi.js";
+import { addGame, deleteGame, listGames } from "../nocoApi.js";
 import { showToast } from "../toast.js";
 
-const API_URL = "/noco-api/api/v3/data/pxleh7p3llnfif4/mmvd47excbwbt2k";
 const ADMIN_PASSWORD = "bgg";
 const authenticated = ref(sessionStorage.getItem("admin_authenticated") === "true");
 const password = ref("");
@@ -161,11 +161,10 @@ const logout = () => {
 
 const loadGames = (page = 1) => {
 	loading.value = true;
-	axios.get(`${API_URL}/records`, { params: { limit: pageSize, offset: (page - 1) * pageSize } }).then((res) => {
-		const records = res.data?.records || res.data?.list || (Array.isArray(res.data) ? res.data : []);
-		games.value = records.map((record) => ({ Id: record.id ?? record.Id, ...(record.fields || record) }));
+	listGames({ limit: pageSize, offset: (page - 1) * pageSize }).then(({ games: pageGames, hasNext: nextPage }) => {
+		games.value = pageGames;
 		pageNumber.value = page;
-		hasNext.value = Boolean(res.data?.next);
+		hasNext.value = nextPage;
 	}).catch(() => showToast("โหลดข้อมูลไม่สำเร็จ", "error")).finally(() => { loading.value = false; });
 };
 
@@ -199,7 +198,7 @@ const addSelectedGame = () => {
 	const name = gameName(game);
 	const minPlayers = game.minplayers?.value || 0;
 	const maxPlayers = game.maxplayers?.value || minPlayers;
-	axios.post(`${API_URL}/records`, { fields: { BGG_ID: game.id, Name: name, Image: game.image, Playtime: game.playingtime?.value || 0, Player: `${minPlayers}-${maxPlayers}`, Played: 0 } }).then(() => {
+	addGame({ BGG_ID: game.id, Name: name, Image: game.image, Playtime: game.playingtime?.value || 0, Player: `${minPlayers}-${maxPlayers}`, Played: 0 }).then(() => {
 		showToast("เพิ่มเกมแล้ว", "success");
 		selectedGame.value = null;
 		searchText.value = "";
@@ -209,7 +208,7 @@ const addSelectedGame = () => {
 
 const removeGame = (game) => {
 	if (!window.confirm(`ต้องการลบ "${game.Name}" หรือไม่?`)) return;
-	axios.delete(`${API_URL}/records`, { data: { id: game.Id } }).then(() => {
+	deleteGame(game.Id).then(() => {
 		games.value = games.value.filter((item) => item.Id !== game.Id);
 		showToast("ลบเกมแล้ว", "success");
 	}).catch(() => showToast("ลบข้อมูลไม่สำเร็จ", "error"));

@@ -156,8 +156,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import axios from "axios";
 import { getBoardGame, searchBoardGames } from "../bggApi.js";
+import { addGame, listGames } from "../nocoApi.js";
 import { showToast } from "../toast.js";
 
 const searchText = ref("");
@@ -269,9 +269,8 @@ const addToCollection = () => {
     Player: player,
   };
 
-  axios
-    .post("/n8n-api/webhook/bgg-api/add", payload)
-    .then((res) => {
+  addGame({ ...payload, Played: 0 })
+    .then(() => {
       showToast(`เพิ่ม "${bgData.value.name}" เข้าคอลเลคชั่นแล้ว!`, "success");
       updateDB();
       isAdding.value = false;
@@ -289,9 +288,9 @@ const isInCollection = computed(() => {
 });
 
 const updateDB = () => {
-  axios.get("/n8n-api/webhook/bgg-api/collection").then((res) => {
-    DB.value = res.data;
-    localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
+  listGames({ limit: 1000 }).then(({ games }) => {
+    DB.value = games;
+    localStorage.setItem("BoardgameDB", JSON.stringify(games));
   });
 };
 

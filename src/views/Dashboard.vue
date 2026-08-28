@@ -199,6 +199,7 @@ import { computed, onBeforeUnmount, onMounted, provide, ref } from "vue";
 import axios from "axios";
 import BoardGame from "../components/BoardGame.vue";
 import { showToast } from "../toast.js";
+import { listGames, updateGame } from "../nocoApi.js";
 
 const bgID = ref("");
 const showModal = ref(false);
@@ -294,16 +295,12 @@ const filterDB = computed(() => {
 
 const play = (id, gameName) => {
   playLoadingId.value = id;
-  axios
-    .patch(
-      "/n8n-api/webhook/00325598-78e4-4094-ad41-a5faf5778670/bgg-api/play/" +
-        id,
-    )
-    .then((res) => {
+  const item = DB.value.find((game) => game.Id === id);
+  const played = (Number(item?.Played) || 0) + 1;
+  updateGame(id, { Played: played }).then(() => {
       // Find item in DB and increment Played reactively
-      const item = DB.value.find((x) => x.Id === id);
       if (item) {
-        item.Played = (Number(item.Played) || 0) + 1;
+        item.Played = played;
         // Update local storage to persist immediately
         localStorage.setItem("BoardgameDB", JSON.stringify(DB.value));
       }
@@ -321,9 +318,9 @@ const play = (id, gameName) => {
 };
 
 const fetchCollectionSilently = () => {
-  axios.get("/n8n-api/webhook/bgg-api/collection").then((res) => {
-    DB.value = res.data;
-    localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
+  listGames({ limit: 1000 }).then(({ games }) => {
+    DB.value = games;
+    localStorage.setItem("BoardgameDB", JSON.stringify(games));
   });
 };
 
@@ -333,9 +330,9 @@ onMounted(() => {
     DB.value = JSON.parse(localStorage.getItem("BoardgameDB"));
   }
 
-  axios.get("/n8n-api/webhook/bgg-api/collection").then((res) => {
-    DB.value = res.data;
-    localStorage.setItem("BoardgameDB", JSON.stringify(res.data));
+  listGames({ limit: 1000 }).then(({ games }) => {
+    DB.value = games;
+    localStorage.setItem("BoardgameDB", JSON.stringify(games));
   });
 });
 
