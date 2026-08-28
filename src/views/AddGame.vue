@@ -232,29 +232,33 @@ const getBG = (id, fallback = null) => {
       }
 
       const name = data.name;
-      const thaiLang = /[ก-๙]/;
+      const names = Array.isArray(name) ? name : [];
 
       bgData.value = data;
 
-      if (name && name.length > 0) {
-        const primaryName = name.find((n) => n.type === "primary");
-        bgData.value.name =
-          primaryName?.value || name[0]?.value || i18n.global.t("unknownGameName");
-
-        const thaiName = name.find((n) => thaiLang.test(n.value));
-        if (thaiName) {
-          bgData.value.name = thaiName.value;
-        }
-      } else if (name) {
-        bgData.value.name = name.value;
-      } else {
-        bgData.value.name = i18n.global.t("unknownGameName");
-      }
+      const primaryName = names.find((n) => n.type === "primary");
+      bgData.value.name =
+        primaryName?.value ||
+        names[0]?.value ||
+        name?.value ||
+        i18n.global.t("unknownGameName");
     })
     .catch((err) => {
       console.error(err);
       showToast(i18n.global.t("fetchGameError"), "error");
     });
+};
+
+const extractTags = (game) => {
+  const links = game?.link;
+  if (!Array.isArray(links)) return "";
+  return links
+    .filter(
+      (link) =>
+        link.type === "boardgamecategory" || link.type === "boardgamemechanic",
+    )
+    .map((link) => link.value)
+    .join(", ");
 };
 
 const addToCollection = () => {
@@ -271,6 +275,7 @@ const addToCollection = () => {
     Image: bgData.value.image,
     Playtime: playtime,
     Player: player,
+    Tags: extractTags(bgData.value),
   };
 
   addGame({ ...payload, Played: 0 })

@@ -192,6 +192,12 @@ const gameName = (game) => {
 	return names.find((item) => item?.type === "primary")?.value || names[0]?.value || i18n.global.t("unknownGameName");
 };
 
+const extractTags = (game) => {
+	const links = game?.link;
+	if (!Array.isArray(links)) return "";
+	return links.filter((link) => link.type === "boardgamecategory" || link.type === "boardgamemechanic").map((link) => link.value).join(", ");
+};
+
 const addSelectedGame = () => {
 	if (!selectedGame.value) return;
 	saving.value = true;
@@ -199,7 +205,7 @@ const addSelectedGame = () => {
 	const name = gameName(game);
 	const minPlayers = game.minplayers?.value || 0;
 	const maxPlayers = game.maxplayers?.value || minPlayers;
-	addGame({ BGG_ID: game.id, Name: name, Image: game.image, Playtime: game.playingtime?.value || 0, Player: `${minPlayers}-${maxPlayers}`, Played: 0 }).then(() => {
+	addGame({ BGG_ID: game.id, Name: name, Image: game.image, Playtime: game.playingtime?.value || 0, Player: `${minPlayers}-${maxPlayers}`, Played: 0, Tags: extractTags(game) }).then(() => {
 		showToast(i18n.global.t("gameAddedShort"), "success");
 		selectedGame.value = null;
 		searchText.value = "";

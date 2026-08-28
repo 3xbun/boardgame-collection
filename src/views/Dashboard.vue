@@ -102,6 +102,45 @@
       </div>
     </div>
 
+    <!-- Tag Filter (collapsible) -->
+    <div class="tag-filter-section" v-if="availableTags.length > 0">
+      <button class="tag-filter-toggle" @click="tagFilterOpen = !tagFilterOpen">
+        <span class="tag-filter-title">
+          <i class="fa-duotone fa-tags"></i>
+          <span>{{ $t('filterByTag') }}</span>
+          <span v-if="selectedTag !== null" class="active-tag-badge">
+            {{ selectedTag }}
+          </span>
+        </span>
+        <i
+          :class="[
+            'fa-duotone fa-chevron-down tag-filter-chevron',
+            { open: tagFilterOpen },
+          ]"
+        ></i>
+      </button>
+
+      <div class="tag-filter-body" v-if="tagFilterOpen">
+        <div class="sort-chips">
+          <button
+            :class="['sort-chip', selectedTag === null ? 'active' : '']"
+            @click="selectedTag = null"
+          >
+            <i class="fa-duotone fa-tags"></i>
+            <span>{{ $t('all') }}</span>
+          </button>
+          <button
+            v-for="tag in availableTags"
+            :key="tag"
+            :class="['sort-chip', selectedTag === tag ? 'active' : '']"
+            @click="selectedTag = selectedTag === tag ? null : tag"
+          >
+            <span>{{ tag }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Boardgames Cards Grid -->
     <div v-if="DB.length === 0" class="empty-state">
       <i class="fa-duotone fa-box-open-full empty-icon"></i>
@@ -111,6 +150,15 @@
         <i class="fa-duotone fa-plus"></i>
         <span>{{ $t('firstGame') }}</span>
       </router-link>
+    </div>
+
+    <div v-else-if="filterDB.length === 0" class="empty-state">
+      <i class="fa-duotone fa-tag-empty empty-icon"></i>
+      <h3>{{ $t('noGamesForTag') }}</h3>
+      <button class="add-btn inline-add clear-chip-btn" @click="selectedTag = null">
+        <i class="fa-duotone fa-xmark"></i>
+        <span>{{ $t('clearTags') }}</span>
+      </button>
     </div>
 
     <div v-else class="cards-grid">
@@ -224,6 +272,8 @@ provide("showModal", showModal);
 const DB = ref([]);
 const sortBy = ref("alphabetically");
 const sortOrder = ref("asc");
+const selectedTag = ref(null);
+const tagFilterOpen = ref(false);
 const playLoadingId = ref(null);
 const visibleCards = ref(new Set());
 let cardObserver;
@@ -256,6 +306,20 @@ const observeCards = () => {
 
 const totalPlays = computed(() => {
   return DB.value.reduce((sum, item) => sum + (Number(item.Played) || 0), 0);
+});
+
+const getItemTags = (item) => {
+  if (Array.isArray(item.Tags)) return item.Tags;
+  if (typeof item.Tags === "string" && item.Tags.trim()) {
+    return item.Tags.split(",").map((t) => t.trim()).filter(Boolean);
+  }
+  return [];
+};
+
+const availableTags = computed(() => {
+  const set = new Set();
+  DB.value.forEach((item) => getItemTags(item).forEach((t) => set.add(t)));
+  return [...set].sort((a, b) => a.localeCompare(b));
 });
 
 const gameLanguage = (item) => {
@@ -295,7 +359,14 @@ const handleSort = (criteria) => {
 const filterDB = computed(() => {
   const multiplier = sortOrder.value === "asc" ? 1 : -1;
 
-  return [...DB.value].sort((a, b) => {
+  const filtered =
+    selectedTag.value === null
+      ? DB.value
+      : DB.value.filter((item) =>
+          getItemTags(item).includes(selectedTag.value),
+        );
+
+  return [...filtered].sort((a, b) => {
     if (sortBy.value === "alphabetically") {
       const nameA = a.Name || "";
       const nameB = b.Name || "";
@@ -550,6 +621,86 @@ h1 {
   font-size: 0.75rem;
   display: flex;
   align-items: center;
+}
+
+.clear-chip-btn {
+  background: rgba(244, 63, 94, 0.15);
+  color: var(--danger);
+  box-shadow: none;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.clear-chip-btn:hover {
+  background: rgba(244, 63, 94, 0.25);
+  color: var(--danger);
+}
+
+/* Collapsible Tag Filter */
+.tag-filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.tag-filter-toggle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.tag-filter-toggle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tag-filter-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: inherit;
+}
+
+.tag-filter-title i {
+  color: var(--primary);
+}
+
+.tag-filter-chevron {
+  font-size: 0.8rem;
+  transition: transform var(--transition-fast);
+}
+
+.tag-filter-chevron.open {
+  transform: rotate(180deg);
+}
+
+.active-tag-badge {
+  background: var(--primary);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 2rem;
+  box-shadow: 0 2px 6px var(--primary-glow);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-filter-body {
+  animation: fadeIn 0.2s ease;
 }
 
 /* Empty State */

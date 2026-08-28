@@ -133,6 +133,30 @@ const categories = computed(() => {
   );
 });
 
+const SCRIPT_PATTERNS = {
+  th: /[\u0E00-\u0E7F]/,
+  ja: /[\u3040-\u30FF\u31F0-\u31FF]/,
+  zh: /[\u3400-\u4DBF\u4E00-\u9FFF]/,
+};
+
+const selectLocalizedName = (names) => {
+  const list = Array.isArray(names) ? names : [];
+  if (list.length === 0) return "";
+
+  const primary =
+    list.find((n) => n.type === "primary")?.value ||
+    list[0]?.value ||
+    i18n.global.t("unknownGameName");
+
+  const locale = i18n.global.locale.value;
+  const pattern = SCRIPT_PATTERNS[locale];
+  if (pattern) {
+    const localized = list.find((n) => pattern.test(n.value));
+    if (localized) return localized.value;
+  }
+  return primary;
+};
+
 const close = () => {
   showModal.value = false;
 };
@@ -141,27 +165,10 @@ const getBG = (id) => {
   getBoardGame(id)
     .then((data) => {
 
-      const name = data.name;
-      const thaiLang = /[ก-๙]/;
-
       bgData.value = data;
-
-      if (name && name.length > 0) {
-        const primaryName = name.find((n) => n.type === "primary");
-        bgData.value.name =
-          primaryName?.value ||
-          name[0]?.value ||
-          i18n.global.t("unknownGameName");
-
-        const thaiName = name.find((n) => thaiLang.test(n.value));
-        if (thaiName) {
-          bgData.value.name = thaiName.value;
-        }
-      } else if (name) {
-        bgData.value.name = name.value;
-      } else {
-        bgData.value.name = i18n.global.t("unknownGameName");
-      }
+      bgData.value.name =
+        selectLocalizedName(data.name) ||
+        i18n.global.t("unknownGameName");
 
       ready.value = true;
     })
